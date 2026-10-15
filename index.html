@@ -1,146 +1,490 @@
 
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QuickBite | Food Ordering</title>
-<style>
-* { box-sizing: border-box; }
-body { margin: 0; font-family: Arial, sans-serif; background: #fffaf5; color: #292524; }
-header { background: #b91c1c; color: white; padding: 22px 7%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-header h1 { margin: 0; }
-header a { color: white; text-decoration: none; margin-left: 18px; }
-.hero { padding: 48px 7%; background: linear-gradient(120deg,#fee2e2,#ffedd5); }
-.hero h2 { font-size: 38px; margin: 0 0 12px; }
-.hero p { font-size: 17px; }
-.offer { display: inline-block; background: #b91c1c; color: white; padding: 10px 16px; border-radius: 7px; }
-main { padding: 28px 7%; }
-.categories { display: flex; flex-wrap: wrap; gap: 10px; }
-.categories span { background: #ffedd5; padding: 10px 16px; border-radius: 20px; }
-.menu { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 20px; margin-top: 20px; }
-.card { background: white; border: 1px solid #fed7aa; border-radius: 12px; padding: 20px; box-shadow: 0 3px 10px #0000000a; }
-.food { font-size: 48px; }
-.card h3 { margin: 8px 0; }
-.price { font-size: 20px; font-weight: bold; color: #b91c1c; }
-.available { color: #15803d; font-weight: bold; }
-button { border: 0; background: #b91c1c; color: white; padding: 10px 15px; border-radius: 7px; cursor: pointer; }
-button:hover { background: #7f1d1d; }
-#cart { background: #fff; padding: 18px; margin-top: 25px; border: 1px solid #fed7aa; border-radius: 10px; }
-footer { background: #292524; color: white; text-align: center; padding: 20px; margin-top: 30px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBite | Online Food Ordering</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fffaf5;
+            color: #292929;
+        }
+
+        header {
+            background: #e64a19;
+            color: white;
+            padding: 22px 7%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header h1 {
+            font-size: 30px;
+        }
+
+        header p {
+            margin-top: 5px;
+        }
+
+        .cart-summary {
+            background: white;
+            color: #e64a19;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .hero {
+            padding: 55px 7%;
+            background: linear-gradient(120deg, #fff0df, #ffe0c2);
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 38px;
+            margin-bottom: 14px;
+        }
+
+        .hero p {
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        .offer {
+            background: #fff3cd;
+            border: 2px dashed #e64a19;
+            border-radius: 12px;
+            padding: 22px;
+            margin: 25px auto 0;
+            max-width: 650px;
+        }
+
+        .offer h3 {
+            color: #c0390b;
+            margin-bottom: 8px;
+        }
+
+        .offer code {
+            background: #e64a19;
+            color: white;
+            padding: 5px 9px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        main {
+            max-width: 1150px;
+            margin: auto;
+            padding: 35px 20px;
+        }
+
+        section {
+            margin-bottom: 38px;
+        }
+
+        section h2 {
+            margin-bottom: 18px;
+            font-size: 25px;
+        }
+
+        .restaurant {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #0000000d;
+            line-height: 1.9;
+        }
+
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .category {
+            background: white;
+            border: 1px solid #f0c7ae;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 20px;
+        }
+
+        .food-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px #00000010;
+            padding-bottom: 18px;
+        }
+
+        .food-image {
+            background: #fff0df;
+            font-size: 65px;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .food-details {
+            padding: 17px;
+        }
+
+        .food-details h3 {
+            margin-bottom: 8px;
+        }
+
+        .food-details p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .price {
+            color: #e64a19;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .availability {
+            display: inline-block;
+            margin: 12px 0;
+            color: #16803d;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .unavailable {
+            color: #b42318;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            border-radius: 7px;
+            padding: 11px 16px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .add-btn {
+            background: #e64a19;
+            color: white;
+            width: 100%;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .cart-box {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 3px 12px #0000000d;
+        }
+
+        #cart-items {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        #cart-items li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .remove-btn {
+            background: #fbe9e7;
+            color: #c0390b;
+            padding: 5px 9px;
+        }
+
+        .checkout-btn {
+            background: #16803d;
+            color: white;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .empty {
+            color: #777;
+            padding: 10px 0;
+        }
+
+        footer {
+            background: #292929;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 600px) {
+            .hero h2 {
+                font-size: 29px;
+            }
+
+            header h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<header>
-  <h1>🍔 QuickBite</h1>
-  <nav>
-    <a href="#categories">Categories</a>
-    <a href="#menu">Menu</a>
-    <a href="#cart">My Cart (<span id="count">0</span>)</a>
-  </nav>
-</header>
+    <header>
+        <div>
+            <h1>🍔 QuickBite</h1>
+            <p>Fresh food. Fast delivery. Happy customers.</p>
+        </div>
 
-<section class="hero">
-  <h2>Good food. Great mood.</h2>
-  <p>Discover delicious meals delivered fresh to your table.</p>
-  <p class="offer">SPECIAL OFFER: Get 20% off your first order!</p>
-</section>
+        <div class="cart-summary">
+            🛒 Cart: <span id="cart-count">0</span> items
+            | ₹<span id="header-total">0</span>
+        </div>
+    </header>
 
-<main>
-  <section id="categories">
-    <h2>Food Categories</h2>
-    <div class="categories">
-      <span>🍕 Pizza</span><span>🍔 Burgers</span>
-      <span>🍜 Noodles</span><span>🥗 Healthy</span><span>🍰 Desserts</span>
+    <div class="hero">
+        <h2>Your Favourite Food, Delivered Fresh!</h2>
+        <p>Explore delicious meals, discover special deals, and order your favourites.</p>
+
+        <div class="offer">
+            <h3>🎉 NEW FEATURE: QuickBite Special Offer</h3>
+            <p>Enjoy <strong>20% OFF</strong> on your next order above ₹299!</p>
+            <p>Use coupon code: <code>QUICK20</code></p>
+        </div>
     </div>
-  </section>
 
-  <section id="menu">
-    <h2>Popular Menu</h2>
-    <div class="menu">
-      <article class="card">
-        <div class="food">🍕</div><h3>Margherita Pizza</h3>
-        <p>Classic cheese and tomato pizza.</p>
-        <p class="price">₹249</p><p class="available">● Available</p>
-        <button onclick="addItem('Margherita Pizza',249)">Add to Cart</button>
-      </article>
-      <article class="card">
-        <div class="food">🍔</div><h3>Classic Burger</h3>
-        <p>Juicy patty with fresh vegetables.</p>
-        <p class="price">₹149</p><p class="available">● Available</p>
-        <button onclick="addItem('Classic Burger',149)">Add to Cart</button>
-      </article>
-      <article class="card">
-        <div class="food">🍜</div><h3>Veg Noodles</h3>
-        <p>Stir-fried noodles with vegetables.</p>
-        <p class="price">₹129</p><p class="available">● Available</p>
-        <button onclick="addItem('Veg Noodles',129)">Add to Cart</button>
-      </article>
-      <article class="card">
-        <div class="food">🥗</div><h3>Fresh Salad</h3>
-        <p>A refreshing and healthy bowl.</p>
-        <p class="price">₹99</p><p class="available">● Available</p>
-        <button onclick="addItem('Fresh Salad',99)">Add to Cart</button>
-      </article>
-    </div>
-  </section>
+    <main>
+        <section>
+            <h2>🏪 Restaurant Information</h2>
+            <div class="restaurant">
+                <h3>QuickBite Kitchen</h3>
+                <p>⭐ Rating: 4.5/5 (demo rating)</p>
+                <p>🍽️ Cuisine: Indian, Chinese, Italian and Fast Food</p>
+                <p>🕒 Timings: 10:00 AM – 11:00 PM</p>
+                <p>🛵 Estimated delivery: 25–40 minutes</p>
+                <p>📍 Location: Main Street, Vellore</p>
+            </div>
+        </section>
 
-  <section id="cart">
-    <h2>🛒 Your Cart</h2>
-    <ul id="items"><li>Your cart is empty.</li></ul>
-    <h3>Total: ₹<span id="total">0</span></h3>
-    <button onclick="checkout()">Place Order</button>
-    <p id="message" role="status"></p>
-  </section>
-</main>
+        <section>
+            <h2>🍽️ Food Categories</h2>
+            <div class="categories">
+                <div class="category">🍕 Pizza</div>
+                <div class="category">🍔 Burgers</div>
+                <div class="category">🍛 Indian Meals</div>
+                <div class="category">🍜 Noodles</div>
+                <div class="category">🥤 Beverages</div>
+                <div class="category">🍰 Desserts</div>
+            </div>
+        </section>
 
-<footer>
-  <p>QuickBite Online Food Ordering Portal</p>
-  <p>Fresh food, fast delivery, happy customers.</p>
-</footer>
+        <section>
+            <h2>⭐ Our Menu</h2>
 
-<script>
-let cart = [];
+            <div class="menu">
+                <article class="food-card">
+                    <div class="food-image">🍕</div>
+                    <div class="food-details">
+                        <h3>Margherita Pizza</h3>
+                        <p>Classic pizza with cheese, tomato and herbs.</p>
+                        <div class="price">₹199</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('Margherita Pizza', 199)">Add to Cart</button>
+                    </div>
+                </article>
 
-function addItem(name, price) {
-  cart.push({ name, price });
-  renderCart();
-}
+                <article class="food-card">
+                    <div class="food-image">🍔</div>
+                    <div class="food-details">
+                        <h3>Classic Burger</h3>
+                        <p>Fresh vegetables, crispy patty and signature sauce.</p>
+                        <div class="price">₹149</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('Classic Burger', 149)">Add to Cart</button>
+                    </div>
+                </article>
 
-function renderCart() {
-  document.getElementById('count').textContent = cart.length;
-  const list = document.getElementById('items');
-  list.innerHTML = '';
+                <article class="food-card">
+                    <div class="food-image">🍛</div>
+                    <div class="food-details">
+                        <h3>Veg Biryani</h3>
+                        <p>Fragrant rice with spices and seasonal vegetables.</p>
+                        <div class="price">₹179</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('Veg Biryani', 179)">Add to Cart</button>
+                    </div>
+                </article>
 
-  if (cart.length === 0) {
-    list.innerHTML = '<li>Your cart is empty.</li>';
-  } else {
-    cart.forEach(item => {
-      const li = document.createElement('li');
-      li.textContent = item.name + ' - ₹' + item.price;
-      list.appendChild(li);
-    });
-  }
+                <article class="food-card">
+                    <div class="food-image">🍜</div>
+                    <div class="food-details">
+                        <h3>Hakka Noodles</h3>
+                        <p>Stir-fried noodles with vegetables and sauces.</p>
+                        <div class="price">₹139</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('Hakka Noodles', 139)">Add to Cart</button>
+                    </div>
+                </article>
 
-  document.getElementById('total').textContent =
-    cart.reduce((sum, item) => sum + item.price, 0);
-}
+                <article class="food-card">
+                    <div class="food-image">🥤</div>
+                    <div class="food-details">
+                        <h3>Cold Coffee</h3>
+                        <p>Chilled coffee topped with a creamy finish.</p>
+                        <div class="price">₹99</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('Cold Coffee', 99)">Add to Cart</button>
+                    </div>
+                </article>
 
-function checkout() {
-  const message = document.getElementById('message');
+                <article class="food-card">
+                    <div class="food-image">🍰</div>
+                    <div class="food-details">
+                        <h3>Chocolate Cake</h3>
+                        <p>Rich chocolate dessert for a sweet finish.</p>
+                        <div class="price">₹119</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('Chocolate Cake', 119)">Add to Cart</button>
+                    </div>
+                </article>
 
-  if (cart.length === 0) {
-    message.textContent = 'Please add an item before placing an order.';
-    return;
-  }
+                <article class="food-card">
+                    <div class="food-image">🍟</div>
+                    <div class="food-details">
+                        <h3>French Fries</h3>
+                        <p>Golden, crispy fries served with a dip.</p>
+                        <div class="price">₹89</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('French Fries', 89)">Add to Cart</button>
+                    </div>
+                </article>
 
-  message.textContent = 'Demo order placed successfully! Total: ₹' +
-    cart.reduce((sum, item) => sum + item.price, 0);
-  cart = [];
-  renderCart();
-}
-</script>
+                <article class="food-card">
+                    <div class="food-image">🥪</div>
+                    <div class="food-details">
+                        <h3>Grilled Sandwich</h3>
+                        <p>Toasted sandwich filled with vegetables and cheese.</p>
+                        <div class="price">₹129</div>
+                        <span class="availability">● Available</span>
+                        <button class="add-btn" onclick="addToCart('Grilled Sandwich', 129)">Add to Cart</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section>
+            <h2>🛒 Your Shopping Cart</h2>
+            <div class="cart-box">
+                <div id="cart-empty" class="empty">Your cart is empty. Add something delicious!</div>
+                <ul id="cart-items"></ul>
+                <h3>Subtotal: ₹<span id="subtotal">0</span></h3>
+                <p id="discount-line">Discount: ₹0</p>
+                <h3>Total: ₹<span id="total">0</span></h3>
+                <button class="checkout-btn" onclick="checkout()">Place Demo Order</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <h3>QuickBite — Good Food, Good Mood!</h3>
+        <p>Online Food Ordering Portal | DevOps Assessment Q2</p>
+        <p>Demo application. Orders are not sent to a real restaurant.</p>
+    </footer>
+
+    <script>
+        const cart = [];
+
+        function addToCart(name, price) {
+            cart.push({ name: name, price: price });
+            updateCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function updateCart() {
+            const items = document.getElementById('cart-items');
+            const empty = document.getElementById('cart-empty');
+
+            items.innerHTML = '';
+
+            let subtotal = 0;
+
+            cart.forEach(function(item, index) {
+                subtotal += item.price;
+
+                const li = document.createElement('li');
+                const name = document.createElement('span');
+                const remove = document.createElement('button');
+
+                name.textContent = item.name + ' — ₹' + item.price;
+                remove.textContent = 'Remove';
+                remove.className = 'remove-btn';
+                remove.onclick = function() {
+                    removeFromCart(index);
+                };
+
+                li.appendChild(name);
+                li.appendChild(remove);
+                items.appendChild(li);
+            });
+
+            const discount = subtotal >= 299 ? Math.round(subtotal * 0.20) : 0;
+            const total = subtotal - discount;
+
+            empty.style.display = cart.length === 0 ? 'block' : 'none';
+
+            document.getElementById('cart-count').textContent = cart.length;
+            document.getElementById('header-total').textContent = total;
+            document.getElementById('subtotal').textContent = subtotal;
+            document.getElementById('discount-line').textContent =
+                'QUICK20 discount: ₹' + discount;
+            document.getElementById('total').textContent = total;
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Please add food items to your cart first.');
+                return;
+            }
+
+            const total = document.getElementById('total').textContent;
+
+            alert(
+                'Thank you for choosing QuickBite!\\n' +
+                'Your demo order total is ₹' + total + '.\\n' +
+                'This is a demonstration; no real order was placed.'
+            );
+
+            cart.length = 0;
+            updateCart();
+        }
+    </script>
 </body>
 </html>
-```
