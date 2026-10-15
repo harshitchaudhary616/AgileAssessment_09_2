@@ -3,6 +3,7 @@ pipeline {
     agent any
 
     environment {
+        PATH = "/Applications/Docker.app/Contents/Resources/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
         IMAGE = 'perkeylynx/food-ordering'
         APP = 'food-ordering-service'
     }
@@ -14,14 +15,30 @@ pipeline {
             }
         }
 
+        stage('Check Tools') {
+            steps {
+                sh '''
+                    docker --version
+                    kubectl version --client
+                    git --version
+                '''
+            }
+        }
+
         stage('Build and Test') {
             steps {
                 sh '''
                     docker build -t $IMAGE:$BUILD_NUMBER .
+
+                    docker rm -f food-test-$BUILD_NUMBER 2>/dev/null || true
+
                     docker run -d --name food-test-$BUILD_NUMBER \
-                      -p 18082:80 $IMAGE:$BUILD_NUMBER
+                        -p 18082:80 $IMAGE:$BUILD_NUMBER
+
                     sleep 3
+
                     curl --fail http://localhost:18082/
+
                     docker rm -f food-test-$BUILD_NUMBER
                 '''
             }
@@ -35,8 +52,11 @@ pipeline {
                     passwordVariable: 'DH_PASS'
                 )]) {
                     sh '''
-                        echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+                        echo "$DH_PASS" | docker login \
+                            -u "$DH_USER" --password-stdin
+
                         docker push $IMAGE:$BUILD_NUMBER
+
                         docker logout
                     '''
                 }
@@ -51,64 +71,75 @@ pipeline {
                 )]) {
                     sh '''
                         export KUBECONFIG="$KCFG"
+
                         kubectl config use-context docker-desktop
 
-                        # Remember which colour currently serves traffic.
+                        # Save the currently active colour.
                         ACTIVE=$(kubectl get service $APP \
-                          -o jsonpath='{.spec.selector.version}' 2>/dev/null || true)
+                            -o jsonpath='{.spec.selector.version}' 2>/dev/null || true)
 
                         if [ "$ACTIVE" != "blue" ] && [ "$ACTIVE" != "green" ]; then
-                          ACTIVE=blue
+                            ACTIVE=blue
                         fi
 
-                        # Apply resources, then restore the active selector.
+                        # Create both deployments and the service.
                         kubectl apply -f deployment.yaml
-                        kubectl patch service $APP --type=merge \
-                          -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$ACTIVE\\"}}}"
 
+                        # Preserve the active traffic selector.
+                        kubectl patch service $APP --type=merge \
+                            -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$ACTIVE\\"}}}"
+
+                        # Select the inactive environment.
                         if [ "$ACTIVE" = "blue" ]; then
-                          TARGET=green
+                            TARGET=green
                         else
-                          TARGET=blue
+                            TARGET=blue
                         fi
 
                         DEPLOY=foodie-$TARGET
-                        echo "Stable version: $ACTIVE"
-                        echo "Deploying new version: $TARGET"
 
-                        # Update only the inactive deployment.
+                        echo "Current stable version: $ACTIVE"
+                        echo "Deploying to: $TARGET"
+
+                        # Deploy the new version to the inactive colour.
                         kubectl set image deployment/$DEPLOY \
-                          food-ordering=$IMAGE:$BUILD_NUMBER
+                            food-ordering=$IMAGE:$BUILD_NUMBER
 
-                        # Failed rollout exits before traffic is switched.
-                        kubectl rollout status deployment/$DEPLOY --timeout=120s
+                        # Stop here if the new deployment fails.
+                        kubectl rollout status deployment/$DEPLOY \
+                            --timeout=120s
 
-                        # Verify every new pod can serve the page.
-                        for i in 1 2 3; do
-                          POD=$(kubectl get pods -l app=foodie,version=$TARGET \
+                        # Test the new version before switching traffic.
+                        POD=$(kubectl get pods \
+                            -l app=foodie,version=$TARGET \
                             -o jsonpath='{.items[0].metadata.name}')
-                          kubectl exec "$POD" -- wget -qO- http://127.0.0.1/ >/dev/null
-                        done
 
-                        # Switch traffic to the healthy release.
+                        kubectl exec "$POD" -- \
+                            wget -qO- http://127.0.0.1/ >/dev/null
+
+                        # Switch traffic only after the test passes.
                         kubectl patch service $APP --type=merge \
-                          -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$TARGET\\"}}}"
+                            -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$TARGET\\"}}}"
 
-                        # Confirm the service has endpoints.
                         sleep 3
+
+                        # Verify the new service has endpoints.
                         ENDPOINTS=$(kubectl get endpoints $APP \
-                          -o jsonpath='{.subsets[*].addresses[*].ip}')
+                            -o jsonpath='{.subsets[*].addresses[*].ip}')
+
                         if [ -z "$ENDPOINTS" ]; then
-                          echo "No endpoints: restoring stable version $ACTIVE"
-                          kubectl patch service $APP --type=merge \
-                            -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$ACTIVE\\"}}}"
-                          exit 1
+                            echo "No endpoints. Restoring $ACTIVE."
+                            kubectl patch service $APP --type=merge \
+                                -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$ACTIVE\\"}}}"
+                            exit 1
                         fi
 
-                        echo "Traffic switched to $TARGET"
+                        echo "Traffic successfully switched to $TARGET."
+
                         kubectl get deployments
                         kubectl get pods
                         kubectl get service $APP
+                        kubectl get endpoints $APP
                     '''
                 }
             }
@@ -116,11 +147,18 @@ pipeline {
     }
 
     post {
-        failure {
-            echo 'Release failed. The previous stable colour should continue serving traffic.'
+        always {
+            sh '''
+                docker rm -f food-test-$BUILD_NUMBER 2>/dev/null || true
+            '''
         }
+
         success {
-            echo 'Blue-Green deployment completed successfully.'
+            echo 'Build, tests, image push and Blue-Green deployment completed.'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check the failed stage and verify the active Service selector.'
         }
     }
 }
