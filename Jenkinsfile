@@ -53,7 +53,6 @@ pipeline {
                     sh '''
                         echo "$DH_PASS" | docker login \
                             -u "$DH_USER" --password-stdin
-
                         docker push $IMAGE:$BUILD_NUMBER
                         docker logout
                     '''
@@ -71,15 +70,13 @@ pipeline {
                         export KUBECONFIG="$KCFG"
                         kubectl config use-context docker-desktop
 
-                        # Apply both deployments and the Service.
                         kubectl apply -f deployment.yaml
 
-                        # Determine the active, stable colour.
                         ACTIVE=$(kubectl get service $APP \
-                            -o jsonpath='{.spec.selector.version}')
+                            -o jsonpath='{.spec.selector.version}' 2>/dev/null || true)
 
                         if [ "$ACTIVE" != "blue" ] && [ "$ACTIVE" != "green" ]; then
-                            echo "ERROR: Service has no valid active colour."
+                            echo "ERROR: Service must select blue or green."
                             exit 1
                         fi
 
@@ -91,68 +88,56 @@ pipeline {
 
                         DEPLOY=foodie-$TARGET
 
-                        echo "Stable colour: $ACTIVE"
-                        echo "Candidate colour: $TARGET"
+                        echo "Stable version: $ACTIVE"
+                        echo "Candidate version: $TARGET"
 
-                        # Deploy the new image to the inactive colour.
-                        # To test a failed rollout, temporarily use:
-                        # IMAGE_TAG=does-not-exist
-                        # For normal releases, use the build number.
+                        # Normal release: use the image built by this run.
                         IMAGE_TAG=$BUILD_NUMBER
 
+                        # Update only the inactive deployment.
                         kubectl set image deployment/$DEPLOY \
                             food-ordering=$IMAGE:$IMAGE_TAG
 
-                        # Wait for the candidate to become ready.
+                        # If rollout fails, leave stable traffic unchanged.
                         if ! kubectl rollout status deployment/$DEPLOY \
                             --timeout=120s; then
-
-                            echo "Candidate failed. Keeping $ACTIVE active."
-
+                            echo "Rollout failed; retaining $ACTIVE."
                             kubectl patch service $APP --type=merge \
                                 -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$ACTIVE\\"}}}"
-
                             exit 1
                         fi
 
-                        # Test the candidate before switching traffic.
+                        # Test candidate before sending traffic to it.
                         POD=$(kubectl get pods \
                             -l app=foodie,version=$TARGET \
                             -o jsonpath='{.items[0].metadata.name}')
 
                         if ! kubectl exec "$POD" -- \
                             wget -qO- http://127.0.0.1/ >/dev/null; then
-
-                            echo "Candidate health check failed. Keeping $ACTIVE active."
-
+                            echo "Candidate health check failed."
                             kubectl patch service $APP --type=merge \
                                 -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$ACTIVE\\"}}}"
-
                             exit 1
                         fi
 
-                        # Switch traffic only after candidate tests pass.
+                        # Switch traffic only after successful tests.
                         kubectl patch service $APP --type=merge \
                             -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$TARGET\\"}}}"
 
                         sleep 3
 
-                        # Validate Service endpoints after the switch.
                         ENDPOINTS=$(kubectl get endpoints $APP \
                             -o jsonpath='{.subsets[*].addresses[*].ip}')
 
+                        # Restore stable traffic if the Service has no endpoints.
                         if [ -z "$ENDPOINTS" ]; then
-                            echo "Post-switch check failed. Restoring $ACTIVE."
-
+                            echo "Post-switch check failed; restoring $ACTIVE."
                             kubectl patch service $APP --type=merge \
                                 -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"foodie\\",\\"version\\":\\"$ACTIVE\\"}}}"
-
                             exit 1
                         fi
 
-                        echo "Blue-Green deployment succeeded."
-                        echo "Active colour: $TARGET"
-
+                        echo "Deployment successful; active colour: $TARGET"
                         kubectl get deployments
                         kubectl get pods
                         kubectl get service $APP
@@ -171,11 +156,11 @@ pipeline {
         }
 
         success {
-            echo 'Build, test, image push and Blue-Green deployment succeeded.'
+            echo 'Build, test, push and Blue-Green deployment succeeded.'
         }
 
         failure {
-            echo 'Release failed. Verify that the previous stable colour remains active.'
+            echo 'Release failed. Verify the stable Service selector and website.'
         }
     }
 }
