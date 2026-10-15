@@ -1,1 +1,146 @@
 
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickBite | Food Ordering</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; background: #fffaf5; color: #292524; }
+header { background: #b91c1c; color: white; padding: 22px 7%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+header h1 { margin: 0; }
+header a { color: white; text-decoration: none; margin-left: 18px; }
+.hero { padding: 48px 7%; background: linear-gradient(120deg,#fee2e2,#ffedd5); }
+.hero h2 { font-size: 38px; margin: 0 0 12px; }
+.hero p { font-size: 17px; }
+.offer { display: inline-block; background: #b91c1c; color: white; padding: 10px 16px; border-radius: 7px; }
+main { padding: 28px 7%; }
+.categories { display: flex; flex-wrap: wrap; gap: 10px; }
+.categories span { background: #ffedd5; padding: 10px 16px; border-radius: 20px; }
+.menu { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 20px; margin-top: 20px; }
+.card { background: white; border: 1px solid #fed7aa; border-radius: 12px; padding: 20px; box-shadow: 0 3px 10px #0000000a; }
+.food { font-size: 48px; }
+.card h3 { margin: 8px 0; }
+.price { font-size: 20px; font-weight: bold; color: #b91c1c; }
+.available { color: #15803d; font-weight: bold; }
+button { border: 0; background: #b91c1c; color: white; padding: 10px 15px; border-radius: 7px; cursor: pointer; }
+button:hover { background: #7f1d1d; }
+#cart { background: #fff; padding: 18px; margin-top: 25px; border: 1px solid #fed7aa; border-radius: 10px; }
+footer { background: #292524; color: white; text-align: center; padding: 20px; margin-top: 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍔 QuickBite</h1>
+  <nav>
+    <a href="#categories">Categories</a>
+    <a href="#menu">Menu</a>
+    <a href="#cart">My Cart (<span id="count">0</span>)</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <h2>Good food. Great mood.</h2>
+  <p>Discover delicious meals delivered fresh to your table.</p>
+  <p class="offer">SPECIAL OFFER: Get 20% off your first order!</p>
+</section>
+
+<main>
+  <section id="categories">
+    <h2>Food Categories</h2>
+    <div class="categories">
+      <span>🍕 Pizza</span><span>🍔 Burgers</span>
+      <span>🍜 Noodles</span><span>🥗 Healthy</span><span>🍰 Desserts</span>
+    </div>
+  </section>
+
+  <section id="menu">
+    <h2>Popular Menu</h2>
+    <div class="menu">
+      <article class="card">
+        <div class="food">🍕</div><h3>Margherita Pizza</h3>
+        <p>Classic cheese and tomato pizza.</p>
+        <p class="price">₹249</p><p class="available">● Available</p>
+        <button onclick="addItem('Margherita Pizza',249)">Add to Cart</button>
+      </article>
+      <article class="card">
+        <div class="food">🍔</div><h3>Classic Burger</h3>
+        <p>Juicy patty with fresh vegetables.</p>
+        <p class="price">₹149</p><p class="available">● Available</p>
+        <button onclick="addItem('Classic Burger',149)">Add to Cart</button>
+      </article>
+      <article class="card">
+        <div class="food">🍜</div><h3>Veg Noodles</h3>
+        <p>Stir-fried noodles with vegetables.</p>
+        <p class="price">₹129</p><p class="available">● Available</p>
+        <button onclick="addItem('Veg Noodles',129)">Add to Cart</button>
+      </article>
+      <article class="card">
+        <div class="food">🥗</div><h3>Fresh Salad</h3>
+        <p>A refreshing and healthy bowl.</p>
+        <p class="price">₹99</p><p class="available">● Available</p>
+        <button onclick="addItem('Fresh Salad',99)">Add to Cart</button>
+      </article>
+    </div>
+  </section>
+
+  <section id="cart">
+    <h2>🛒 Your Cart</h2>
+    <ul id="items"><li>Your cart is empty.</li></ul>
+    <h3>Total: ₹<span id="total">0</span></h3>
+    <button onclick="checkout()">Place Order</button>
+    <p id="message" role="status"></p>
+  </section>
+</main>
+
+<footer>
+  <p>QuickBite Online Food Ordering Portal</p>
+  <p>Fresh food, fast delivery, happy customers.</p>
+</footer>
+
+<script>
+let cart = [];
+
+function addItem(name, price) {
+  cart.push({ name, price });
+  renderCart();
+}
+
+function renderCart() {
+  document.getElementById('count').textContent = cart.length;
+  const list = document.getElementById('items');
+  list.innerHTML = '';
+
+  if (cart.length === 0) {
+    list.innerHTML = '<li>Your cart is empty.</li>';
+  } else {
+    cart.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = item.name + ' - ₹' + item.price;
+      list.appendChild(li);
+    });
+  }
+
+  document.getElementById('total').textContent =
+    cart.reduce((sum, item) => sum + item.price, 0);
+}
+
+function checkout() {
+  const message = document.getElementById('message');
+
+  if (cart.length === 0) {
+    message.textContent = 'Please add an item before placing an order.';
+    return;
+  }
+
+  message.textContent = 'Demo order placed successfully! Total: ₹' +
+    cart.reduce((sum, item) => sum + item.price, 0);
+  cart = [];
+  renderCart();
+}
+</script>
+</body>
+</html>
+```
